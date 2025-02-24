@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In - InfinitVCC</title>
+  <style>
+    /* General Styles */
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    /* Sign In Container */
+    .signin-container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .signin-container h2 {
+      margin-bottom: 20px;
+      font-size: 24px;
+      color: #007BFF;
+    }
+
+    .signin-container p {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .signin-container a {
+      color: #007BFF;
+      text-decoration: none;
+    }
+
+    .signin-container a:hover {
+      text-decoration: underline;
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #007BFF;
+    }
+
+    .form-group .error {
+      color: red;
+      font-size: 12px;
+      margin-top: 5px;
+      display: none;
+    }
+
+    .form-group input.invalid {
+      border-color: red;
+    }
+
+    /* Submit Button */
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .submit-btn:hover {
+      background-color: #005bb5;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 480px) {
+      .signin-container {
+        padding: 20px;
+      }
+
+      .signin-container h2 {
+        font-size: 20px;
+      }
+
+      .form-group input {
+        font-size: 12px;
+      }
+
+      .submit-btn {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Sign In Container -->
+  <div class="signin-container">
+    <h2>Sign In</h2>
+    <p>Don't have an account? <a href="register.html">Register</a></p>
+
+    <!-- Sign In Form -->
+    <form id="signin-form">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="Enter your email" required>
+        <div class="error" id="email-error">Please enter a valid email address.</div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password" required>
+        <div class="error" id="password-error">Password must be at least 8 characters long.</div>
+      </div>
+
+      <button type="submit" class="submit-btn">Sign In</button>
+    </form>
+  </div>
+
+  <!-- Firebase Integration -->
+  <script type="module">
+    // Import the necessary Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
+
+    // Your Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAqxaJNHaQzi2rCtbCP81FkdqU708Z_Ufg",
+      authDomain: "infinitvcc.firebaseapp.com",
+      projectId: "infinitvcc",
+      storageBucket: "infinitvcc.firebasestorage.app",
+      messagingSenderId: "957410101221",
+      appId: "1:957410101221:web:362469c086ed5111bcd10c",
+      measurementId: "G-Q3EWBPLV8M"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app); // Initialize Firebase Authentication
+
+    // Get form elements
+    const signinForm = document.getElementById('signin-form');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+
+    const emailError = document.getElementById('email-error');
+    const passwordError = document.getElementById('password-error');
+
+    // Handle form submission
+    signinForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Reset errors
+      emailError.style.display = 'none';
+      passwordError.style.display = 'none';
+
+      let isValid = true;
+
+      // Validate Email
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(emailInput.value.trim())) {
+        emailError.style.display = 'block';
+        emailInput.classList.add('invalid');
+        isValid = false;
+      } else {
+        emailInput.classList.remove('invalid');
+      }
+
+      // Validate Password
+      if (passwordInput.value.length < 8) {
+        passwordError.style.display = 'block';
+        passwordInput.classList.add('invalid');
+        isValid = false;
+      } else {
+        passwordInput.classList.remove('invalid');
+      }
+
+      // If form is valid, proceed with Firebase sign-in
+      if (isValid) {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+
+        try {
+          // Sign in with Firebase Authentication
+          await signInWithEmailAndPassword(auth, email, password);
+
+          // Redirect to dashboard.html after successful login
+          window.location.href = "dashboard.html";
+        } catch (error) {
+          // Handle specific errors
+          if (error.code === 'auth/wrong-password') {
+            alert('Incorrect password'); // Show popup for incorrect password
+          } else if (error.code === 'auth/user-not-found') {
+            alert('User not found'); // Show popup for user not found
+          } else {
+            alert('Error: ' + error.message); // Show other errors
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

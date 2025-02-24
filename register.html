@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - InfinitVCC</title>
+  <style>
+    /* General Styles */
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f9;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    /* Registration Container */
+    .registration-container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .registration-container h2 {
+      margin-bottom: 20px;
+      font-size: 24px;
+      color: #007BFF;
+    }
+
+    .registration-container p {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 20px;
+    }
+
+    .registration-container a {
+      color: #007BFF;
+      text-decoration: none;
+    }
+
+    .registration-container a:hover {
+      text-decoration: underline;
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 15px;
+      text-align: left;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #007BFF;
+    }
+
+    .form-group .error {
+      color: red;
+      font-size: 12px;
+      margin-top: 5px;
+      display: none;
+    }
+
+    .form-group input.invalid {
+      border-color: red;
+    }
+
+    /* Submit Button */
+    .submit-btn {
+      width: 100%;
+      padding: 12px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .submit-btn:hover {
+      background-color: #005bb5;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 480px) {
+      .registration-container {
+        padding: 20px;
+      }
+
+      .registration-container h2 {
+        font-size: 20px;
+      }
+
+      .form-group input {
+        font-size: 12px;
+      }
+
+      .submit-btn {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Registration Container -->
+  <div class="registration-container">
+    <h2>Create Your Account</h2>
+    <p>Already have an account? <a href="signin.html">Sign In</a></p>
+
+    <!-- Registration Form -->
+    <form id="registration-form">
+      <div class="form-group">
+        <label for="full-name">Full Name</label>
+        <input type="text" id="full-name" placeholder="Enter your full name" required>
+        <div class="error" id="full-name-error">Please enter your full name.</div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="Enter your email" required>
+        <div class="error" id="email-error">Please enter a valid email address.</div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" placeholder="Enter your password" required>
+        <div class="error" id="password-error">Password must be at least 8 characters long.</div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirm-password">Confirm Password</label>
+        <input type="password" id="confirm-password" placeholder="Confirm your password" required>
+        <div class="error" id="confirm-password-error">Passwords do not match.</div>
+      </div>
+
+      <button type="submit" class="submit-btn">Register</button>
+    </form>
+  </div>
+
+  <!-- Firebase Integration -->
+  <script type="module">
+    // Import the necessary Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.3.1/firebase-firestore.js";
+
+    // Your Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAqxaJNHaQzi2rCtbCP81FkdqU708Z_Ufg",
+      authDomain: "infinitvcc.firebaseapp.com",
+      projectId: "infinitvcc",
+      storageBucket: "infinitvcc.appspot.com", // Corrected storage bucket URL
+      messagingSenderId: "957410101221",
+      appId: "1:957410101221:web:362469c086ed5111bcd10c",
+      measurementId: "G-Q3EWBPLV8M"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app); // Initialize Firebase Authentication
+    const db = getFirestore(app); // Initialize Firestore
+
+    // Get form elements
+    const registrationForm = document.getElementById('registration-form');
+    const fullNameInput = document.getElementById('full-name');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm-password');
+
+    const fullNameError = document.getElementById('full-name-error');
+    const emailError = document.getElementById('email-error');
+    const passwordError = document.getElementById('password-error');
+    const confirmPasswordError = document.getElementById('confirm-password-error');
+
+    // Handle form submission
+    registrationForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      // Reset errors
+      fullNameError.style.display = 'none';
+      emailError.style.display = 'none';
+      passwordError.style.display = 'none';
+      confirmPasswordError.style.display = 'none';
+
+      let isValid = true;
+
+      // Validate Full Name
+      if (fullNameInput.value.trim() === '') {
+        fullNameError.style.display = 'block';
+        fullNameInput.classList.add('invalid');
+        isValid = false;
+      } else {
+        fullNameInput.classList.remove('invalid');
+      }
+
+      // Validate Email
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(emailInput.value.trim())) {
+        emailError.style.display = 'block';
+        emailInput.classList.add('invalid');
+        isValid = false;
+      } else {
+        emailInput.classList.remove('invalid');
+      }
+
+      // Validate Password
+      if (passwordInput.value.length < 8) {
+        passwordError.style.display = 'block';
+        passwordInput.classList.add('invalid');
+        isValid = false;
+      } else {
+        passwordInput.classList.remove('invalid');
+      }
+
+      // Validate Confirm Password
+      if (confirmPasswordInput.value !== passwordInput.value) {
+        confirmPasswordError.style.display = 'block';
+        confirmPasswordInput.classList.add('invalid');
+        isValid = false;
+      } else {
+        confirmPasswordInput.classList.remove('invalid');
+      }
+
+      // If form is valid, proceed with Firebase registration
+      if (isValid) {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        const fullName = fullNameInput.value.trim();
+
+        try {
+          // Create user with Firebase Authentication
+          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          const user = userCredential.user;
+
+          // Save user data to Firestore
+          await setDoc(doc(db, 'users', user.uid), {
+            fullName: fullName,
+            email: email,
+            createdAt: new Date().toISOString()
+          });
+
+          // Redirect to dashboard.html after successful registration
+          console.log("User registered successfully:", user);
+          window.location.replace("dashboard.html"); // Use replace for redirection
+        } catch (error) {
+          // Handle errors
+          console.error("Registration error:", error.message);
+          if (error.code === 'auth/email-already-in-use') {
+            alert('Email already in use, please choose another.');
+          } else {
+            alert('Error: ' + error.message);
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
